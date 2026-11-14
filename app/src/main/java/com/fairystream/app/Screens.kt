@@ -734,7 +734,8 @@ fun PlayerScreen(
         if (activity != null && window != null) {
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
             WindowCompat.getInsetsController(window, window.decorView).apply {
-                systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BY_SWIPE
+                // BEHAVIOR_SHOW_TRANSIENT_BY_SWIPE; constant not resolvable in this androidx.core, value is 2
+                systemBarsBehavior = 2
                 hide(WindowInsetsCompat.Type.systemBars())
             }
         }
