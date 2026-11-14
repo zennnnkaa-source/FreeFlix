@@ -3,6 +3,7 @@ package com.fairystream.app
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 import java.util.concurrent.TimeUnit
 
 data class SeriesItem(val title: String, val slug: String, val thumb: String?)
@@ -15,6 +16,7 @@ object FairyApi {
     const val BASE = "https://fairyanime.net"
 
     private const val PLAYER_HOST = "https://streaming.tonytonychopper.com"
+    private const val ANIME_HOST = "https://anime.tonytonychopper.net"
     private const val ABYSS_HOST = "https://abysscdn.com"
     private const val MARIMO_REFERER = "https://player.marimo.me/"
     private const val UA =
@@ -24,9 +26,17 @@ object FairyApi {
         "category", "member", "search", "scoretop", "genre", "blog",
         "page", "tag", "author", "feed", "wp-json", "xmlrpc"
     )
-    private val playerHints = listOf("tonytonychopper", "playback", "marimo", "abysscdn")
+    private val playerHints = listOf("tonytonychopper", "playback", "marimo", "abysscdn", "anime.tonytonychopper")
 
-    private val watchPathPattern = Regex("""/watch/([A-Za-z0-9_-]+)\.html""")
+    // ลิงก์ตอนบนเว็บเป็น /watch/<id>/ (ไม่มี .html) จึงรองรับทั้งสองแบบ
+    private val watchPathPattern = Regex("""/watch/([A-Za-z0-9_-]+)(?:\.html)?/?""")
+    // playback id อยู่ในสคริปต์ /base/<watchId>/ เช่น playback/f/<id>/ ซึ่งไม่จำเป็นต้องเท่ากับ id ของหน้า watch
+    private val basePlaybackPattern = Regex("""playback/[a-z]/([A-Za-z0-9_-]+)/?""")
+    private val animeVidPattern = Regex("""anime\.tonytonychopper\.net/v2/([A-Za-z0-9_-]+)""")
+    private val mediaUrlPattern = Regex(
+        """https?://[^\s"'<>]+?\.(?:mp4|m3u8)[^\s"'<>]*""",
+        RegexOption.IGNORE_CASE
+    )
     private val dataIdPattern = Regex("""([A-Za-z0-9_-]{6,20})""")
     private val playbackPattern = Regex("""https?://streaming\.tonytonychopper\.com/playback/[fy]/[A-Za-z0-9_-]+/?""")
     private val marimoPattern = Regex("""https?://player\.marimo\.me/[^"'\s>]+""")
@@ -71,15 +81,16 @@ object FairyApi {
             val lowered = path.lowercase()
             if (lowered in reservedSegments || lowered.substringBefore('-') in reservedSegments) return@forEach
 
-            val img = anchor.selectFirst("img")
-            val title = img?.attr("alt")?.trim()?.takeIf { it.isNotEmpty() }
+            // การ์ดหนึ่งใบมีลิงก์ ico-play ที่ไม่มีข้อความ ชื่อจริงอยู่ใน h3 และปกอยู่ทั้งการ์ด จึงต้องดูที่ทั้งการ์ด
+            val card: Element? = anchor.parents().firstOrNull { it.hasClass("latest-movie-img-container") }
+                ?: anchor.parent()
+            val title = card?.selectFirst("h3 a")?.text()?.trim()?.takeIf { it.isNotEmpty() }
                 ?: anchor.text().trim().takeIf { it.isNotEmpty() }
+                ?: card?.select("img")?.map { it.attr("alt").trim() }
+                    ?.firstOrNull { it.isNotEmpty() && !it.equals("play", ignoreCase = true) }
                 ?: path.replace('-', ' ')
-            val thumb = img?.let { el ->
-                listOf("src", "data-src")
-                    .map { el.absUrl(it) }
-                    .firstOrNull { it.isNotEmpty() && !it.startsWith("data:") }
-            }
+            val thumb = card?.let { posterOf(it) }
+
             val existing = found[path]
             if (existing == null || (existing.thumb == null && thumb != null)) {
                 found[path] = SeriesItem(title, path, thumb)
@@ -87,6 +98,12 @@ object FairyApi {
         }
         return found.values.toList()
     }
+
+    // ปกจริงอยู่ใน data-src (lazy load) ส่วน src เป็นรูป placeholder ที่ /assets/
+    private fun posterOf(card: Element): String? =
+        card.select("img").map { img ->
+            img.absUrl("data-src").ifEmpty { img.absUrl("src") }
+        }.firstOrNull { it.isNotEmpty() && !it.startsWith("data:") && "/assets/" !in it }
 
     fun fetchCover(slug: String): String? {
         val doc = Jsoup.parse(fetch("$BASE/$slug/"), BASE)
@@ -124,55 +141,99 @@ object FairyApi {
     }
 
     fun resolveQualities(watchId: String): List<Quality> {
-        val watchUrl = "$BASE/watch/$watchId.html"
+        val watchUrl = "$BASE/watch/$watchId/"
         val watchHtml = fetch(watchUrl)
         val doc = Jsoup.parse(watchHtml, BASE)
+
+        // iframe ของเครื่องเล่นถูกสร้างด้วย JS จากสคริปต์ base จึงต้องโหลดสคริปต์นั้นมาอ่าน playback id
+        val baseUrl = doc.select("script[src*='/base/']").firstOrNull()?.absUrl("src")
+            ?.takeIf { it.isNotEmpty() }
+            ?: "$BASE/base/$watchId/"
+        val baseJs = runCatching { fetch(baseUrl, referer = watchUrl) }.getOrDefault("")
+        val playbackIds = basePlaybackPattern.findAll(baseJs).map { it.groupValues[1] }.distinct().toList()
 
         val candidates = linkedSetOf<String>()
         doc.select("iframe[src]").forEach { frame ->
             val src = frame.absUrl("src").trim()
             if (src.isNotEmpty() && playerHints.any { it in src }) candidates += src
         }
+        playbackIds.forEach { pid ->
+            candidates += "$PLAYER_HOST/playback/f/$pid/"
+            candidates += "$PLAYER_HOST/playback/v/$pid/"
+        }
         playbackPattern.findAll(watchHtml).forEach { candidates += it.value }
         marimoPattern.findAll(watchHtml).forEach { candidates += it.value }
         abyssPattern.findAll(watchHtml).forEach { candidates += it.value }
-        doc.select("script[src*='/base/']").forEach { script ->
-            val id = script.absUrl("src").trimEnd('/').substringAfterLast('/')
-            if (id.length in 5..24) {
-                candidates += "$PLAYER_HOST/playback/f/$id/"
-                candidates += "$PLAYER_HOST/playback/y/$id/"
-            }
-        }
         if (candidates.isEmpty()) {
             candidates += "$PLAYER_HOST/playback/f/$watchId/"
-            candidates += "$PLAYER_HOST/playback/y/$watchId/"
+            candidates += "$PLAYER_HOST/playback/v/$watchId/"
         }
 
-        val (playerUrl, playerHtml) = candidates.firstNotNullOfOrNull { url ->
-            runCatching { url to fetch(url, referer = watchUrl) }.getOrNull()
-        } ?: error("เครื่องเล่นของตอนนี้เข้าไม่ได้ ($watchId)")
+        return candidates.asSequence()
+            .mapNotNull { url ->
+                runCatching { extractQualities(url, watchUrl) }.getOrNull()?.takeIf { it.isNotEmpty() }
+            }
+            .firstOrNull()
+            ?: error("เครื่องเล่นของตอนนี้เข้าไม่ได้ ($watchId)")
+    }
 
-        val videoId = abyssVideoPattern.find(playerHtml)?.groupValues?.get(1)
-            ?: marimoPattern.find(playerHtml)?.value?.let { marimo ->
+    private fun extractQualities(playerUrl: String, referer: String): List<Quality> {
+        val html = fetch(playerUrl, referer = referer)
+
+        // ไฟล์ตรงที่อยู่ในคอนฟิกเครื่องเล่น เช่น file: "https://...mp4"
+        val direct = streamPattern.findAll(html)
+            .map { Quality(labelOf(it.groupValues[1]), it.groupValues[1]) }
+            .distinctBy { it.url }
+            .toList()
+        if (direct.isNotEmpty()) return direct
+
+        animeVidPattern.find(html)?.groupValues?.get(1)?.let { vid ->
+            val anime = animeQualities(vid, playerUrl)
+            if (anime.isNotEmpty()) return anime
+        }
+
+        val videoId = abyssVideoPattern.find(html)?.groupValues?.get(1)
+            ?: marimoPattern.find(html)?.value?.let { marimo ->
                 val marimoHtml = fetch(marimo, referer = playerUrl)
                 abyssVideoPattern.find(marimoHtml)?.groupValues?.get(1)
                     ?: videoKeyPattern.find(marimoHtml)?.groupValues?.get(1)
             }
-            ?: videoKeyPattern.find(playerHtml)?.groupValues?.get(1)
-            ?: error("หา video id จากเครื่องเล่นไม่เจอ")
+            ?: videoKeyPattern.find(html)?.groupValues?.get(1)
+            ?: return emptyList()
 
         val pageUrl = "$ABYSS_HOST/?v=$videoId"
         val page = fetch(pageUrl, referer = MARIMO_REFERER)
-
-        val qualities = streamPattern.findAll(page).mapTo(mutableListOf<Quality>()) { match ->
-            val url = match.groupValues[1]
-            Quality(labelOf(url), url)
-        }
+        val qualities = streamPattern.findAll(page)
+            .map { Quality(labelOf(it.groupValues[1]), it.groupValues[1]) }
+            .distinctBy { it.url }
+            .toMutableList()
         if (qualities.isEmpty()) {
-            chunkPattern.find(page)?.let { qualities += Quality("360p+", pageUrl + it.value) }
+            chunkPattern.find(page)?.let { qualities.add(Quality("360p+", pageUrl + it.value)) }
         }
-        if (qualities.isEmpty()) qualities += Quality("Auto", pageUrl)
-        return qualities.distinctBy { it.url }
+        return qualities
+    }
+
+    // endpoint ของ anime.tonytonychopper.net: quality2/<vid>/<q>/ และ file2/<vid>/ ตอบเป็น text/plain
+    // รูปแบบ body ยังไม่ได้ยืนยัน (HAR ไม่มี body) จึงรับได้ทั้ง URL เปล่าและ URL ที่ฝังอยู่ในข้อความ
+    private fun animeQualities(vid: String, referer: String): List<Quality> {
+        val found = mutableListOf<Quality>()
+        for (q in listOf("1080", "720", "480", "360")) {
+            val body = runCatching { fetch("$ANIME_HOST/quality2/$vid/$q/", referer = referer) }.getOrNull()
+                ?: continue
+            mediaUrlOf(body)?.let { found.add(Quality("${q}p", it)) }
+        }
+        if (found.isEmpty()) {
+            val body = runCatching { fetch("$ANIME_HOST/file2/$vid/", referer = referer) }.getOrNull()
+            val url = body?.let { mediaUrlOf(it) }
+            if (url != null) found.add(Quality("Auto", url))
+        }
+        return found.distinctBy { it.url }
+    }
+
+    private fun mediaUrlOf(body: String): String? {
+        val text = body.trim()
+        if (text.startsWith("http") && !text.contains(' ') && !text.contains('\n')) return text
+        return mediaUrlPattern.find(text)?.value
     }
 
     private fun labelOf(url: String): String = when {
