@@ -1,103 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:versionCode="1"
-    android:versionName="2.0">
-
-    <uses-sdk
-        android:minSdkVersion="21"
-        android:targetSdkVersion="34"
-        tools:overrideLibrary="rikka.shizuku.provider,rikka.shizuku.api,rikka.shizuku.aidl,rikka.shizuku.shared" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
-    <!-- FileWatchLog: /storage/emulated/0/NepdonWire/watch.txt -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
-    <!-- Shizuku: privileged input injection for the touch-injection aim. -->
-    <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
-
-    <!-- Signature-level permission gating this app's OWN control broadcasts. On
-         API 21-32 there is no RECEIVER_NOT_EXPORTED flag, so the internally
-         registered control receivers were implicitly exported and any installed
-         app could flip lobby-route / dev-mode (2026-09-18 audit M1). Requiring a
-         signature permission on the receiver means only a same-signing-key app
-         (i.e. this one, auto-granted) can deliver. -->
-    <permission
-        android:name="com.nepdon.wire.permission.INTERNAL_BROADCAST"
-        android:protectionLevel="signature" />
-    <uses-permission android:name="com.nepdon.wire.permission.INTERNAL_BROADCAST" />
 
     <application
-        android:requestLegacyExternalStorage="true"
-        android:largeHeap="true"
-        android:theme="@style/AppTheme"
-        android:label="@string/app_name"
-        android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:allowBackup="false">
-
-        <!-- Login gate is the launcher; it forwards to MainActivity once the
-             session is authorized (or immediately in non-enforcing debug). -->
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="FairyStream"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.FairyStream"
+        android:usesCleartextTraffic="true"
+        android:networkSecurityConfig="@xml/network_security_config">
         <activity
-            android:name="com.nepdon.wire.LoginActivity"
+            android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTask"
-            android:screenOrientation="portrait">
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:theme="@style/Theme.FairyStream">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name="com.nepdon.wire.MainActivity"
-            android:exported="false"
-            android:launchMode="singleTask"
-            android:screenOrientation="portrait" />
-
-        <activity
-            android:name="com.nepdon.wire.VpnPanelActivity"
-            android:exported="false"
-            android:launchMode="singleTask"
-            android:screenOrientation="portrait" />
-
-        <service
-            android:name="com.nepdon.wire.FloatingOverlayService"
-            android:enabled="true"
-            android:exported="false"
-            android:stopWithTask="false" 
-            android:foregroundServiceType="dataSync" />
-
-        <service
-            android:name="com.nepdon.wire.PacketVpnService"
-            android:permission="android.permission.BIND_VPN_SERVICE"
-            android:enabled="true"
-            android:exported="false"
-            android:stopWithTask="false"
-            android:foregroundServiceType="dataSync">
-            <intent-filter>
-                <action android:name="android.net.VpnService" />
-            </intent-filter>
-        </service>
-
-
-        <!-- Shizuku binder provider (delivers the privileged binder to the app). -->
-        <provider
-            android:name="rikka.shizuku.ShizukuProvider"
-            android:authorities="${applicationId}.shizuku"
-            android:multiprocess="false"
-            android:enabled="true"
-            android:exported="true"
-            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
-
     </application>
 </manifest>

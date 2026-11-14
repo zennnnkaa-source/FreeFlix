@@ -1,36 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    There was no themes.xml at all before this - only a 1.1 KB styles.xml - so
-    the app ran on the platform default and every colour was set by hand in
-    Java or inline in the layout.
-
-    Base is Theme.Material.NoActionBar, NOT a Material Components theme.
-    Checked, not assumed: app/build.gradle declares only Shizuku and
-    hiddenapibypass. There is no Material Components, no AppCompat, no
-    ConstraintLayout, and view binding is off; MainActivity extends
-    android.app.Activity. Adopting Material would force an AppCompatActivity
-    migration and a re-theme of the framework AlertDialog in AppPicker - real
-    regression risk in exchange for a cosmetic change.
-
-    Theme.Nepdon (nv_themes.xml) inherits this, and AppTheme points at that.
-
-    Theme.FL.Overlay used to sit here "so a future inflated overlay layout gets
-    the same ground". Overlay windows are built in Java and never inflated, so
-    it was dead from the day it was written. Deleted 2026-09-16.
--->
 <resources>
-
-    <style name="Theme.FL" parent="@android:style/Theme.Material.NoActionBar">
-        <item name="android:colorBackground">@color/fl_bg_base</item>
-        <item name="android:windowBackground">@color/fl_bg_base</item>
-        <item name="android:colorPrimary">@color/fl_bg_surface</item>
-        <item name="android:colorAccent">@color/fl_accent</item>
-        <item name="android:textColorPrimary">@color/fl_text_primary</item>
-        <item name="android:textColorSecondary">@color/fl_text_secondary</item>
-        <item name="android:textColorHint">@color/fl_text_tertiary</item>
-        <item name="android:statusBarColor">@color/fl_bg_base</item>
-        <item name="android:navigationBarColor">@color/fl_bg_base</item>
-        <item name="android:windowLightStatusBar">false</item>
+    <style name="Theme.FairyStream" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">#FF08070D</item>
+        <item name="android:windowBackground">#FF08070D</item>
     </style>
-
 </resources>

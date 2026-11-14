@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- RELEASE overlay: trust the VPS's self-signed bare-IP cert (see
-     res/xml/network_security_config.xml). Debug has its own overlay that
-     permits cleartext to the adb-reversed dev server instead. -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application android:networkSecurityConfig="@xml/network_security_config" />
-</manifest>

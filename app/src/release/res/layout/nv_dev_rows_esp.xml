@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- RELEASE stub: deliberately empty.
-
-     The ESP "Tune panel" and "Debug readout" rows are developer instruments
-     and must not appear in a shipped build. The debug variant has the real
-     rows. Keep the <merge/> - <include> needs the file to exist, and an empty
-     merge contributes no views. -->
-<merge xmlns:android="http://schemas.android.com/apk/res/android" />
