@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/fl_error"/>
+            <corners android:radius="@dimen/fl_radius_md"/>
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/fl_error_container"/>
+            <corners android:radius="@dimen/fl_radius_md"/>
+            <stroke android:width="@dimen/fl_stroke_hairline" android:color="@color/fl_error"/>
+        </shape>
+    </item>
+</selector>

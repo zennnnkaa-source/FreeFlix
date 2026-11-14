@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Nepdon Wire spacing and radius. One scale, used everywhere.
+  Touch targets never go below nv_touch_min (48dp) - the tune panel's
+  steppers are deliberately larger because they are used mid-match.
+-->
+<resources>
+    <dimen name="nv_space_1">4dp</dimen>
+    <dimen name="nv_space_2">8dp</dimen>
+    <dimen name="nv_space_3">12dp</dimen>
+    <dimen name="nv_space_4">16dp</dimen>
+    <dimen name="nv_space_5">20dp</dimen>
+    <dimen name="nv_space_6">24dp</dimen>
+    <dimen name="nv_space_8">32dp</dimen>
+
+    <dimen name="nv_radius_card">12dp</dimen>
+    <dimen name="nv_radius_panel">16dp</dimen>
+    <dimen name="nv_radius_hero">20dp</dimen>
+    <dimen name="nv_radius_pill">999dp</dimen>
+
+    <dimen name="nv_touch_min">48dp</dimen>
+    <dimen name="nv_stepper">52dp</dimen>
+    <dimen name="nv_hairline">1dp</dimen>
+
+    <dimen name="nv_text_display">32sp</dimen>
+    <dimen name="nv_text_title">20sp</dimen>
+    <dimen name="nv_text_body">15sp</dimen>
+    <dimen name="nv_text_label">13sp</dimen>
+    <dimen name="nv_text_micro">11sp</dimen>
+    <dimen name="nv_text_mono">12sp</dimen>
+</resources>

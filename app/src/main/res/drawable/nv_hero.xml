@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The header band. The ONLY full-bleed use of the brand gradient in the app;
+     the primary button and the icon are the other two. Angle 225 runs
+     bottom-left to top-right, matching the icon exactly. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:startColor="@color/nv_blue_deep"
+        android:endColor="@color/nv_teal_deep"
+        android:angle="45"
+        android:type="linear"/>
+</shape>

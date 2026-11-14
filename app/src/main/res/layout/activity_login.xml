@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/nv_ground">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/nv_space_6"
+            android:paddingRight="@dimen/nv_space_6"
+            android:paddingTop="@dimen/nv_space_8"
+            android:paddingBottom="@dimen/nv_space_8">
+
+            <TextView
+                android:layout_width="68dp"
+                android:layout_height="68dp"
+                android:background="@drawable/nepdon_logo_tile"
+                android:gravity="center"
+                android:text="NW"
+                android:textColor="@color/nv_ground"
+                android:textSize="23sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/nv_display" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/nv_space_4"
+                android:text="@string/app_name"
+                android:textColor="@color/nv_text"
+                android:fontFamily="@font/nv_display"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="SECURE ACCESS PORTAL"
+                android:textColor="@color/nv_text_3"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.16" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/nv_space_6"
+                android:orientation="vertical"
+                android:padding="@dimen/nv_space_6"
+                android:background="@drawable/nv_card">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="WELCOME BACK"
+                    android:textColor="@color/nv_text"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Enter your username to continue."
+                    android:textColor="@color/nv_text_2"
+                    android:textSize="14sp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="@dimen/nv_space_5"
+                    android:layout_marginBottom="@dimen/nv_space_5"
+                    android:background="@color/nv_line" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="USERNAME"
+                    android:textColor="@color/nv_text_3"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.12" />
+
+                <EditText
+                    android:id="@+id/et_license_key"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="@dimen/nv_space_2"
+                    android:background="@drawable/nv_input"
+                    android:paddingLeft="@dimen/nv_space_4"
+                    android:paddingRight="@dimen/nv_space_4"
+                    android:hint="@string/login_key_hint"
+                    android:textColorHint="@color/nv_text_3"
+                    android:textColor="@color/nv_text"
+                    android:fontFamily="@font/nv_mono"
+                    android:textSize="15sp"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:imeOptions="actionDone" />
+
+                <Button
+                    android:id="@+id/btn_activate"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="@dimen/nv_space_4"
+                    android:background="@drawable/nv_btn_primary"
+                    android:text="@string/login_activate"
+                    android:textColor="@color/nv_on_brand"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textAllCaps="false" />
+
+                <TextView
+                    android:id="@+id/tv_login_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/nv_space_3"
+                    android:gravity="center"
+                    android:text="@string/login_idle"
+                    android:textColor="@color/nv_text_3"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_telegram"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="@dimen/nv_space_5"
+                    android:text="@string/telegram_channel"
+                    android:textColor="@color/nv_teal"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/nv_space_4"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <View
+                    android:id="@+id/dot_login"
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:background="@drawable/dot_off" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="6dp"
+                    android:text="NEPDON STUDIO"
+                    android:textColor="@color/nv_text_4"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.08" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Engine card, ON. Same gradient, plus a light ring so the live state is
+     legible without the card changing weight and shifting the page. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:startColor="@color/nv_blue_deep"
+        android:endColor="@color/nv_teal_deep"
+        android:angle="45"
+        android:type="linear"/>
+    <corners android:radius="@dimen/nv_radius_panel"/>
+    <stroke android:width="2dp" android:color="@color/nv_on_brand"/>
+</shape>

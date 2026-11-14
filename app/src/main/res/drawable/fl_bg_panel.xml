@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 95% scrim: readable over a bright gameplay frame, where the old 59% fell to 3.46:1 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/fl_bg_scrim"/>
+    <corners android:radius="@dimen/fl_radius_md"/>
+    <stroke android:width="@dimen/fl_stroke_hairline" android:color="@color/fl_outline_strong"/>
+</shape>

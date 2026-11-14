@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Standard card: flat surface, hairline border, no shadow. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/nv_surface"/>
+    <corners android:radius="@dimen/nv_radius_panel"/>
+    <stroke android:width="@dimen/nv_hairline" android:color="@color/nv_line"/>
+</shape>

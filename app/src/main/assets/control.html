@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wire</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0d10;--card:#151921;--line:#232a36;--text:#e6e9ef;--dim:#8a93a3;--on:#3ddc97;--off:#3a4252}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui,sans-serif;padding:12px 12px 56px}
+h1{font-size:16px;margin:4px 0 8px}
+h2{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin:18px 0 6px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px 12px;margin-bottom:8px}
+.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.card .row:first-child{border-top:0}
+.grow{flex:1;min-width:0}
+.name{font-weight:600}
+.sub{color:var(--dim);font-size:12px}
+.sw{position:relative;width:44px;height:24px;flex:none}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.sw span{position:absolute;inset:0;background:var(--off);border-radius:24px;transition:.15s}
+.sw span:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.15s}
+.sw input:checked+span{background:var(--on)}
+.sw input:checked+span:before{transform:translateX(20px)}
+input[type=number],select{background:#0f1218;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px;width:96px}
+button{background:#1d2431;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 12px}
+#status{position:fixed;left:12px;right:12px;bottom:10px;color:var(--dim);font-size:12px}
+.err{color:#ff7a7a}
+</style>
+</head>
+<body>
+<h1>Wire control</h1>
+<div id="root"></div>
+<div id="status"></div>
+<script>
+const TOKEN = new URLSearchParams(location.search).get('t') || '';
+const root = document.getElementById('root');
+const statusEl = document.getElementById('status');
+
+function el(tag, cls, text) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined) n.textContent = text;
+  return n;
+}
+
+function say(msg, bad) {
+  statusEl.textContent = msg || '';
+  statusEl.className = bad ? 'err' : '';
+}
+
+async function call(path, data) {
+  const opt = { headers: { 'X-Token': TOKEN }, cache: 'no-store' };
+  if (data) {
+    opt.method = 'POST';
+    opt.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+    opt.body = new URLSearchParams(data).toString();
+  }
+  const r = await fetch(path, opt);
+  const text = await r.text();
+  if (!r.ok) throw new Error(r.status === 403 ? 'token rejected, open the link from the app' : (text || 'HTTP ' + r.status));
+  return text ? JSON.parse(text) : {};
+}
+
+async function load() {
+  try {
+    render(await call('/api/state'));
+  } catch (e) {
+    root.textContent = '';
+    say(e.message, true);
+  }
+}
+
+async function act(path, data) {
+  let err = '';
+  try {
+    const r = await call(path, data);
+    if (r.ok === false) err = r.error || 'failed';
+  } catch (e) {
+    err = e.message;
+  }
+  await load();
+  say(err, !!err);
+}
+
+function toggle(checked, onChange) {
+  const label = el('label', 'sw');
+  const cb = el('input');
+  cb.type = 'checkbox';
+  cb.checked = checked;
+  cb.onchange = () => onChange(cb.checked);
+  label.append(cb, el('span'));
+  return label;
+}
+
+function switchRow(name, sub, checked, onChange) {
+  const r = el('div', 'row');
+  const info = el('div', 'grow');
+  info.append(el('div', 'name', name));
+  if (sub) info.append(el('div', 'sub', sub));
+  r.append(info, toggle(checked, onChange));
+  return r;
+}
+
+function portRow(port) {
+  const r = el('div', 'row');
+  const info = el('div', 'grow');
+  info.append(el('div', 'name', 'Relay port'), el('div', 'sub', '0 = same port as the game'));
+  const inp = el('input');
+  inp.type = 'number';
+  inp.min = 0;
+  inp.max = 65535;
+  inp.value = port;
+  const btn = el('button', '', 'Apply');
+  btn.onclick = () => act('/api/mod', { name: 'relay_port', value: inp.value });
+  r.append(info, inp, btn);
+  return r;
+}
+
+function settingRow(st) {
+  const r = el('div', 'row');
+  const info = el('div', 'grow');
+  info.append(el('div', 'name', st.title));
+  r.append(info);
+  if (st.type === 'bool') {
+    r.append(toggle(st.value, v => act('/api/setting', { key: st.key, value: v ? '1' : '0' })));
+  } else if (st.type === 'choice') {
+    const sel = el('select');
+    st.labels.forEach((lbl, i) => {
+      const o = el('option', '', lbl);
+      o.value = i;
+      if (i === st.value) o.selected = true;
+      sel.append(o);
+    });
+    sel.onchange = () => act('/api/setting', { key: st.key, value: sel.value });
+    r.append(sel);
+  } else if (st.type === 'num' || st.type === 'int') {
+    const inp = el('input');
+    inp.type = 'number';
+    inp.min = st.min;
+    inp.max = st.max;
+    inp.step = st.step;
+    inp.value = st.value;
+    inp.onchange = () => act('/api/setting', { key: st.key, value: inp.value });
+    r.append(inp);
+  }
+  return r;
+}
+
+function render(s) {
+  root.textContent = '';
+  const m = s.mods;
+
+  root.append(el('h2', '', 'Network'));
+  const net = el('div', 'card');
+  net.append(switchRow('Firewall', 'Blocks the IP and CIDR list while on', m.firewall,
+    v => act('/api/mod', { name: 'firewall', value: v ? '1' : '0' })));
+  net.append(switchRow('Domain', 'Blocks the resolved ban and report hosts while on', m.domain,
+    v => act('/api/mod', { name: 'domain', value: v ? '1' : '0' })));
+  net.append(portRow(m.relay_port));
+  root.append(net);
+
+  root.append(el('h2', '', 'Freeze options'));
+  const fz = el('div', 'card');
+  fz.append(switchRow('Auto freeze', '', m.auto_freeze,
+    v => act('/api/mod', { name: 'auto_freeze', value: v ? '1' : '0' })));
+  fz.append(switchRow('While scoped', '', m.freeze_on_scope,
+    v => act('/api/mod', { name: 'freeze_on_scope', value: v ? '1' : '0' })));
+  fz.append(switchRow('While firing', '', m.freeze_on_fire,
+    v => act('/api/mod', { name: 'freeze_on_fire', value: v ? '1' : '0' })));
+  root.append(fz);
+
+  for (const f of s.features) {
+    root.append(el('h2', '', f.title));
+    const card = el('div', 'card');
+    const head = el('div', 'row');
+    const info = el('div', 'grow');
+    info.append(el('div', 'name', f.title), el('div', 'sub', f.summary));
+    head.append(info);
+    if (f.toggleable) head.append(toggle(f.enabled, v => act('/api/feature', { id: f.id, on: v ? '1' : '0' })));
+    card.append(head);
+    for (const st of f.settings) card.append(settingRow(st));
+    root.append(card);
+  }
+}
+
+if (!TOKEN) say('open the link printed by the app', true);
+load();
+</script>
+</body>
+</html>

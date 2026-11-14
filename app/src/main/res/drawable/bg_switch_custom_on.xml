@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Nepdon Wire switch, ON. The toggle is a clickable TextView whose BACKGROUND is
+  swapped wholesale by UiBindings.applyToggleState, so the knob has to live in
+  the drawable rather than being a separate animated view. Restyling these two
+  files restyles every toggle in the app without touching a line of Java.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/nv_teal_28"/>
+            <corners android:radius="999dp"/>
+            <stroke android:width="1dp" android:color="@color/nv_teal"/>
+        </shape>
+    </item>
+    <item android:gravity="center_vertical|right" android:right="3dp">
+        <shape android:shape="oval">
+            <solid android:color="@color/nv_teal"/>
+            <size android:width="22dp" android:height="22dp"/>
+        </shape>
+    </item>
+</layer-list>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    GHOST. A sheet ghost: domed head, three-lobe wavy hem, two eyes and a mouth.
+
+    THE EYES AND MOUTH ARE HOLES CUT BY WINDING DIRECTION, not by
+    android:fillType="evenOdd". fillType needs API 24 and this app's minSdk is
+    21, where it is silently ignored — which would fill the face solid and leave
+    a featureless blob on old devices only, never reproducing in testing. The
+    body is wound clockwise (it leaves the top heading RIGHT) and each facial
+    feature the other way (arc sweep-flag 0), so the default nonZero rule cuts
+    them on every API.
+
+    I got that backwards on the first build and shipped a faceless blob: with y
+    pointing down, sweep-flag 1 draws CLOCKWISE on screen, the same direction as
+    the body, so the features ADDED winding instead of cancelling it.
+
+    THE FIRST VERSION WAS ALSO LOPSIDED AND TOO SMALL. Its dome ran x=6..20 —
+    centre 13, not 12 — so the ghost sat half a unit right of centre inside its
+    own viewport, and it filled only 58% of the 24-unit box while the snowflake
+    beside it filled 72%. Rendered at the same button size, the ghost simply
+    looked smaller. Now symmetric about x=12 and 17.6 units wide, measured from
+    a screenshot rather than judged by eye.
+
+    The figure starts at y=2.2 rather than the rounder 1.8 so that its INK is
+    centred on y=12, not its bounding box. A ghost is top-heavy — solid dome,
+    scalloped hem — and at 1.8 it measured 4.5px high in a 183px button.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,2.2
+                          C16.86,2.2 20.8,6.14 20.8,11.0
+                          V19.6
+                          c0,1.41 -1.68,2.14 -2.72,1.18
+                          l-1.28,-1.19
+                          c-0.5,-0.47 -1.28,-0.45 -1.77,0.03
+                          l-1.16,1.13
+                          c-0.49,0.48 -1.26,0.48 -1.75,0
+                          l-1.16,-1.13
+                          c-0.49,-0.48 -1.27,-0.49 -1.77,-0.03
+                          l-1.28,1.19
+                          C4.88,21.75 3.2,21.02 3.2,19.6
+                          V11.0
+                          C3.2,6.14 7.14,2.2 12,2.2
+                          Z
+
+                          M8.9,6.9
+                          a2.0,2.6 0 1 0 0,5.2
+                          a2.0,2.6 0 1 0 0,-5.2
+                          Z
+
+                          M15.1,6.9
+                          a2.0,2.6 0 1 0 0,5.2
+                          a2.0,2.6 0 1 0 0,-5.2
+                          Z
+
+                          M12,13.15
+                          a1.45,1.95 0 1 0 0,3.9
+                          a1.45,1.95 0 1 0 0,-3.9
+                          Z" />
+</vector>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    4dp spacing grid, radii, and touch sizing.
+
+    The overlay floor is 52dp, not 48dp. 48dp is the general Android minimum
+    for a finger on a stationary target; these controls are hit mid-match with
+    a thumb while the other hand is aiming. The old tune-panel steppers were
+    34dp x 28dp — 58% of the minimum on the short axis — which is why they felt
+    unhittable.
+-->
+<resources>
+
+    <!-- ==== spacing ==== -->
+    <dimen name="fl_space_1">4dp</dimen>
+    <dimen name="fl_space_2">8dp</dimen>
+    <dimen name="fl_space_3">12dp</dimen>
+    <dimen name="fl_space_4">16dp</dimen>
+    <dimen name="fl_space_5">20dp</dimen>
+    <dimen name="fl_space_6">24dp</dimen>
+    <dimen name="fl_space_8">32dp</dimen>
+
+    <!-- ==== radii ==== -->
+    <dimen name="fl_radius_sm">6dp</dimen>
+    <dimen name="fl_radius_md">10dp</dimen>
+    <dimen name="fl_radius_lg">16dp</dimen>
+    <dimen name="fl_radius_pill">999dp</dimen>
+
+    <!-- ==== strokes ==== -->
+    <dimen name="fl_stroke_hairline">1dp</dimen>
+    <dimen name="fl_stroke">2dp</dimen>
+
+    <!-- ==== touch targets ==== -->
+    <dimen name="fl_touch_min">48dp</dimen>
+    <dimen name="fl_touch_overlay">52dp</dimen>
+    <dimen name="fl_row_height">56dp</dimen>
+    <dimen name="fl_stepper">52dp</dimen>
+
+    <!-- ==== floating button ==== -->
+    <dimen name="fl_fab_size">56dp</dimen>
+    <dimen name="fl_fab_icon">24dp</dimen>
+
+    <!-- ==== panels ==== -->
+    <dimen name="fl_panel_width">340dp</dimen>
+    <dimen name="fl_panel_max_height">460dp</dimen>
+    <dimen name="fl_panel_pad">12dp</dimen>
+
+    <!-- ==== type ==== -->
+    <dimen name="fl_text_display">24sp</dimen>
+    <dimen name="fl_text_title">18sp</dimen>
+    <dimen name="fl_text_subtitle">15sp</dimen>
+    <dimen name="fl_text_body">14sp</dimen>
+    <dimen name="fl_text_label">13sp</dimen>
+    <dimen name="fl_text_caption">11sp</dimen>
+    <dimen name="fl_text_mono">11sp</dimen>
+    <dimen name="fl_text_mono_sm">10sp</dimen>
+
+</resources>

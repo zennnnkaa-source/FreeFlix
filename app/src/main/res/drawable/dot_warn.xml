@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A permission that is missing. Amber, not red: nothing is broken, something
+     is waiting for you. Red is reserved for enemy boxes and real alarms. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="@color/nv_learning"/>
+</shape>

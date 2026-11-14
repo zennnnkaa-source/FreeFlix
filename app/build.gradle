@@ -1,0 +1,146 @@
+apply plugin: 'com.android.application'
+
+// ---------------------------------------------------------------------------
+// Release signing. The release block used to sign with signingConfigs.debug
+// (public debug password) — see docs/SESSION_2026_09_16.md open item #1 and
+// docs/SECURITY_MODEL.md. Real release keys are read from a GITIGNORED
+// keystore.properties at the module-parent root; if it is absent we fall back
+// to debug signing with a LOUD warning so `assembleRelease` still works during
+// development but nobody ships a debug-signed build by accident.
+//
+// keystore.properties (never committed):
+//   storeFile=nuvola-release.jks
+//   storePassword=...
+//   keyAlias=nuvola
+//   keyPassword=...
+// Generate the keystore with the keytool command in docs/SERVER_OPS.md / the
+// build notes, then fill this file in.
+def keystorePropsFile = rootProject.file("keystore.properties")
+def hasReleaseKeystore = keystorePropsFile.exists()
+def keystoreProps = new Properties()
+if (hasReleaseKeystore) {
+    keystoreProps.load(new FileInputStream(keystorePropsFile))
+}
+
+android {
+    namespace 'com.nepdon.wire'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.nepdon.wire"
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "2.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    signingConfigs {
+        if (hasReleaseKeystore) {
+            release {
+                storeFile file(keystoreProps['storeFile'])
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            // Rollout flag: dev builds run in today's no-server mode so the
+            // owner's phone keeps working while the backend is built. Flip to
+            // true (with a local server + `adb reverse tcp:8777 tcp:8777`) to
+            // exercise the login gate on-device. Login is enforced in release.
+            buildConfigField "boolean", "AUTH_ENFORCE", "false"
+        }
+        release {
+            minifyEnabled true
+            shrinkResources true
+            debuggable false
+            zipAlignEnabled true
+            if (hasReleaseKeystore) {
+                signingConfig signingConfigs.release
+            } else {
+                signingConfig signingConfigs.debug
+                println "WARNING: keystore.properties missing — release APK is " +
+                        "DEBUG-SIGNED. Do NOT distribute it. See docs/SERVER_OPS.md."
+            }
+            // Login + server-delivered config are enforced in release.
+            buildConfigField "boolean", "AUTH_ENFORCE", "true"
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    // The nvmux touch-multiplexer ships as libnvmux.so and must be EXTRACTED to
+    // nativeLibraryDir (not run compressed from inside the APK) so Shizuku can
+    // exec it as a shell-uid process. useLegacyPackaging=true is the AGP 8 way
+    // to say android:extractNativeLibs="true".
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+}
+
+dependencies {
+    // Shizuku: privileged (shell-UID) input injection without root, for the
+    // touch-injection aim (vertical head swipe). See docs research report.
+    implementation 'dev.rikka.shizuku:api:13.1.5'
+    implementation 'dev.rikka.shizuku:provider:13.1.5'
+    // Access the hidden android.hardware.input.IInputManager$Stub via reflection
+    // on Android 9+ (the injectInputEvent path runs through Shizuku's binder).
+    implementation 'org.lsposed.hiddenapibypass:hiddenapibypass:4.3'
+
+    // Login + server-delivered config (docs/LOGIN_AND_SERVER.md). OkHttp for the
+    // pinned HTTP client; Tink's subtle primitives for X25519/HKDF/AES-GCM/Ed25519
+    // so the client mirrors the server's raw crypto exactly.
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.google.crypto.tink:tink-android:1.13.0'
+}
+
+// ---------------------------------------------------------------------------
+// H5 (security review): refuse to build a RELEASE that ships without TLS cert
+// pinning AND offline-lease verification. Both are empty until the VPS is
+// deployed (docs/SERVER_OPS.md prints them). Pass -PinsecureReleaseOk to build a
+// pre-deploy test release anyway (e.g. to verify the Bucket-B withholding).
+tasks.whenTaskAdded { task ->
+    // preReleaseBuild runs before R8/packaging, so we fail BEFORE any release
+    // APK is produced (not just at the final assemble step).
+    if (task.name == 'preReleaseBuild') {
+        task.doFirst {
+            if (!project.hasProperty('insecureReleaseOk')) {
+                def cfg = file('src/main/java/com/nepdon/wire/auth/AuthConfig.java').text
+                boolean pinEmpty = (cfg =~ /CERT_PIN\s*=\s*""/) as boolean
+                boolean keyEmpty = (cfg =~ /SERVER_ED25519_PUB_HEX\s*=\s*""/) as boolean
+                if (pinEmpty || keyEmpty) {
+                    throw new GradleException(
+                        "Release blocked: AuthConfig.CERT_PIN and/or " +
+                        "SERVER_ED25519_PUB_HEX are empty. Fill them from the VPS " +
+                        "(docs/SERVER_OPS.md §8), or pass -PinsecureReleaseOk for a " +
+                        "pre-deploy test build.")
+                }
+                // Never let a real release fall back to the public AOSP debug key:
+                // a debug-signed APK is re-signable by anyone, defeating any
+                // signature-hash tamper check (2026-09-17 audit, LOW). The
+                // `release{}` block only warned; make it fail here.
+                if (!hasReleaseKeystore) {
+                    throw new GradleException(
+                        "Release blocked: keystore.properties is missing, so the " +
+                        "release would be DEBUG-SIGNED. Create the release keystore " +
+                        "(docs/SERVER_OPS.md), or pass -PinsecureReleaseOk to build " +
+                        "a throwaway debug-signed release for testing.")
+                }
+            }
+        }
+    }
+}

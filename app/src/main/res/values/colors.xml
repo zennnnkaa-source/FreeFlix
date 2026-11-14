@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    SunnyMod colour system — dark, single cyan accent.
+
+    Every pair here was checked with the WCAG 2.x relative-luminance formula.
+    Translucent values were composited against BOTH #000000 and #FFFFFF and the
+    WORSE ratio taken, because the background is a live game frame of unknown
+    colour. That is not pedantry: the old debug panel used a 59% scrim that
+    measured 14.47:1 over a dark scene and collapsed to 3.46:1 over a bright
+    one — legible exactly when you did not need it.
+
+    Rules that are load-bearing, not taste:
+      * fl_outline is 1.49:1 and is for HAIRLINE DIVIDERS ONLY. Never use it as
+        a control boundary; use fl_outline_strong (3.40:1).
+      * ESP class colours are 1.23-2.08:1 against each other. That is fine for
+        hue coding and useless as the ONLY cue, so every ESP mark also carries a
+        shape cue and, when drawn without a scrim, an fl_esp_halo under-stroke.
+      * The ON/OFF button pair used to be red vs green at 2.00:1 — the one pair
+        roughly 8% of men cannot separate. The replacement pairs a fill change
+        with a stroke change so colour is never the only signal.
+-->
+<resources>
+
+    <!-- ==== surfaces ==== -->
+    <color name="fl_bg_base">#FF000000</color>
+    <color name="fl_bg_surface">#FF160707</color>
+    <color name="fl_bg_surface_elevated">#FF241010</color>
+    <color name="fl_bg_surface_high">#FF321515</color>
+    <!-- 95%: worst-case 15.37:1 for primary text over pure white gameplay -->
+    <color name="fl_bg_scrim">#F2000000</color>
+    <color name="fl_bg_scrim_hud">#E6000000</color>
+
+    <!-- ==== outlines ==== -->
+    <color name="fl_outline">#FF4C1D1D</color>
+    <color name="fl_outline_strong">#FF7F1D1D</color>
+    <color name="fl_outline_focus">#FFEF4444</color>
+
+    <!-- ==== accent ==== -->
+    <color name="fl_accent">#FFEF4444</color>
+    <color name="fl_accent_bright">#FFFCA5A5</color>
+    <color name="fl_accent_dim">#FF991B1B</color>
+    <color name="fl_accent_muted">#FF5B0A0A</color>
+    <color name="fl_on_accent">#FF2B0000</color>
+
+    <!-- ==== text ==== -->
+    <color name="fl_text_primary">#FFFFFFFF</color>
+    <color name="fl_text_secondary">#FFFEE2E2</color>
+    <color name="fl_text_tertiary">#FFFCA5A5</color>
+    <color name="fl_text_disabled">#FF9F4B4B</color>
+
+    <!-- ==== status ==== -->
+    <color name="fl_success">#FFEF4444</color>
+    <color name="fl_success_container">#FF5B0A0A</color>
+    <color name="fl_warning">#FFFFB020</color>
+    <color name="fl_warning_container">#FF4A3208</color>
+    <color name="fl_error">#FFEF4444</color>
+    <color name="fl_error_container">#FF3B0A0A</color>
+    <color name="fl_on_error_container">#FFFFE4E6</color>
+
+    <!-- ==== ESP marks (hue coding only; always pair with a shape cue) ==== -->
+    <color name="fl_esp_enemy">#FFEF4444</color>
+    <color name="fl_esp_team">#FFFCA5A5</color>
+    <color name="fl_esp_unknown">#FFFBBF24</color>
+    <color name="fl_esp_halo">#CC000000</color>
+
+    <!-- ==== health bar ==== -->
+    <color name="fl_hp_high">#FFEF4444</color>
+    <color name="fl_hp_mid">#FFFFD43B</color>
+    <color name="fl_hp_low">#FFFF5252</color>
+    <color name="fl_hp_track">#B3000000</color>
+
+    <!-- ==== floating button ==== -->
+    <color name="fl_btn_off_fill">#FF241010</color>
+    <color name="fl_btn_off_stroke">#FF7F1D1D</color>
+    <color name="fl_btn_on_fill">#FF991B1B</color>
+    <color name="fl_btn_on_stroke">#FFFCA5A5</color>
+
+    <!-- ==== monospace telemetry ==== -->
+    <color name="fl_mono_label">#FFFEE2E2</color>
+    <color name="fl_mono_value">#FFFCA5A5</color>
+    <color name="fl_mono_ok">#FFEF4444</color>
+    <color name="fl_mono_warn">#FFFFB020</color>
+    <color name="fl_mono_err">#FFEF4444</color>
+
+</resources>

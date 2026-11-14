@@ -1,0 +1,1506 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Nepdon Wire main screen.
+
+  MAXIMALIST BY DESIGN. This surface never sits over live gameplay, so it can
+  afford the gradient header, depth and generous type; the in-game overlay is
+  the opposite and stays flat. See docs/NUVOLA_DESIGN.md.
+
+  THE ID CONTRACT. MainActivity, UiBindings and PermissionController bind 59
+  ids out of this file with findViewById and CAST them. Every id below keeps
+  its original Java-side type:
+      cb_*    TextView  - a clickable switch GRAPHIC whose background is
+                          swapped by UiBindings.applyToggleState. NOT a
+                          CheckBox and not a Switch.
+      tv_*    TextView
+      seek_*  SeekBar
+      btn_shizuku, btn_show_floating   Button
+      iv_engine_power                  ImageView
+      dot_*, group_*, btn_engine, main_content   plain View / ViewGroup
+  Renaming or retyping any of them is a null findViewById and a crash on a
+  screen that otherwise looks completely fine.
+
+  btn_show_floating opens the APP PICKER despite its name (MainActivity:126).
+  The id is load-bearing; the label is not.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/nv_ground"
+    android:orientation="vertical">
+
+    <ScrollView
+        android:id="@+id/nv_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+    <LinearLayout
+        android:id="@+id/main_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/page_home"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible">
+
+        <!-- ==================== HERO ==================== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/nv_hero"
+            android:paddingLeft="@dimen/nv_space_6"
+            android:paddingRight="@dimen/nv_space_6"
+            android:paddingTop="52dp"
+            android:paddingBottom="@dimen/nv_space_6">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="46dp"
+                    android:layout_height="46dp"
+                    android:src="@mipmap/ic_launcher_foreground"
+                    android:contentDescription="@string/app_name" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="@dimen/nv_space_2"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/app_name"
+                        android:textColor="@color/nv_on_brand"
+                        android:fontFamily="@font/nv_display"
+                        android:textSize="27sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/creator"
+                        android:textColor="@color/nv_on_brand_2"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btn_shizuku"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/nv_touch_min"
+                    android:minWidth="0dp"
+                    android:paddingLeft="@dimen/nv_space_4"
+                    android:paddingRight="@dimen/nv_space_4"
+                    android:background="@drawable/nv_btn_secondary"
+                    android:text="@string/aim"
+                    android:textColor="@color/nv_text"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/nv_space_6"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <View
+                    android:id="@+id/dot_engine"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:background="@drawable/dot_off" />
+
+                <TextView
+                    android:id="@+id/tv_status"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="@dimen/nv_space_2"
+                    android:text="@string/engine_status_disconnected"
+                    android:textColor="@color/nv_on_brand"
+                    android:fontFamily="@font/nv_display"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ==================== ENGINE ==================== -->
+        <LinearLayout
+            android:id="@+id/btn_engine"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/nv_space_5"
+            android:layout_marginRight="@dimen/nv_space_5"
+            android:layout_marginTop="@dimen/nv_space_5"
+            android:background="@drawable/nv_card_hero"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:minHeight="76dp"
+            android:orientation="horizontal"
+            android:padding="@dimen/nv_space_4">
+
+            <ImageView
+                android:id="@+id/iv_engine_power"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/nv_icon_tile"
+                android:padding="@dimen/nv_space_3"
+                android:src="@android:drawable/ic_lock_power_off"
+                android:contentDescription="@string/activate_engine" />
+
+            <TextView
+                android:id="@+id/tv_engine_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginLeft="@dimen/nv_space_3"
+                android:text="@string/activate_engine"
+                android:textColor="@color/nv_text"
+                android:fontFamily="@font/nv_display"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <View
+                android:id="@+id/dot_app"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:background="@drawable/dot_off" />
+        </LinearLayout>
+
+        <!-- ==================== TARGET ==================== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/nv_space_5"
+            android:layout_marginRight="@dimen/nv_space_5"
+            android:layout_marginTop="@dimen/nv_space_3"
+            android:background="@drawable/nv_card"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="@dimen/nv_space_4">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nv_target"
+                    android:textColor="@color/nv_text_3"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_selected_app"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="@string/target_awaiting"
+                    android:textColor="@color/nv_text"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btn_show_floating"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/nv_touch_min"
+                android:minWidth="0dp"
+                android:paddingLeft="@dimen/nv_space_4"
+                android:paddingRight="@dimen/nv_space_4"
+                android:background="@drawable/nv_btn_secondary"
+                android:text="@string/nv_change"
+                android:textColor="@color/nv_text"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textAllCaps="false" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="36dp"
+            android:layout_marginTop="@dimen/nv_space_6"
+            android:layout_marginBottom="@dimen/nv_space_2"
+            android:text="EFFECT BUTTONS"
+            android:textColor="@color/nv_text_3"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.12" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/nv_space_5"
+            android:layout_marginRight="@dimen/nv_space_5"
+            android:background="@drawable/nv_card"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/nv_space_2"
+            android:paddingBottom="@dimen/nv_space_2">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingLeft="@dimen/nv_space_4"
+                android:paddingRight="@dimen/nv_space_4"
+                android:paddingTop="@dimen/nv_space_2"
+                android:paddingBottom="@dimen/nv_space_2">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ghost"
+                        android:textAppearance="@style/TextAppearance.Nv.Body" />
+                    <TextView
+                        android:id="@+id/tv_float_ghost_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Stop being streamed to other players"
+                        android:textAppearance="@style/TextAppearance.Nv.Label" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/cb_float_ghost"
+                    android:layout_width="52dp"
+                    android:layout_height="28dp"
+                    android:layout_marginLeft="@dimen/nv_space_3"
+                    android:duplicateParentState="true"
+                    android:background="@drawable/bg_switch_custom_off" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingLeft="@dimen/nv_space_4"
+                android:paddingRight="@dimen/nv_space_4"
+                android:paddingTop="@dimen/nv_space_2"
+                android:paddingBottom="@dimen/nv_space_2">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Freeze"
+                        android:textAppearance="@style/TextAppearance.Nv.Body" />
+                    <TextView
+                        android:id="@+id/tv_float_freeze_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Hold the world still"
+                        android:textAppearance="@style/TextAppearance.Nv.Label" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/cb_float_freeze"
+                    android:layout_width="52dp"
+                    android:layout_height="28dp"
+                    android:layout_marginLeft="@dimen/nv_space_3"
+                    android:duplicateParentState="true"
+                    android:background="@drawable/bg_switch_custom_off" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingLeft="@dimen/nv_space_4"
+                android:paddingRight="@dimen/nv_space_4"
+                android:paddingTop="@dimen/nv_space_2"
+                android:paddingBottom="@dimen/nv_space_2">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Teleport"
+                        android:textAppearance="@style/TextAppearance.Nv.Body" />
+                    <TextView
+                        android:id="@+id/tv_float_tele_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Rewrite the position you report"
+                        android:textAppearance="@style/TextAppearance.Nv.Label" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/cb_float_tele"
+                    android:layout_width="52dp"
+                    android:layout_height="28dp"
+                    android:layout_marginLeft="@dimen/nv_space_3"
+                    android:duplicateParentState="true"
+                    android:background="@drawable/bg_switch_custom_off" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/group_tele_options"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/nv_space_5"
+            android:layout_marginRight="@dimen/nv_space_5"
+            android:layout_marginTop="@dimen/nv_space_3"
+            android:background="@drawable/nv_card"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/nv_space_2"
+            android:paddingBottom="@dimen/nv_space_2"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingLeft="@dimen/nv_space_4"
+                android:paddingRight="@dimen/nv_space_4"
+                android:paddingTop="@dimen/nv_space_2"
+                android:paddingBottom="@dimen/nv_space_2">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Auto-stop teleport"
+                        android:textAppearance="@style/TextAppearance.Nv.Body" />
+                    <TextView
+                        android:id="@+id/tv_auto_stop_tele_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="End the effect by itself after the replay"
+                        android:textAppearance="@style/TextAppearance.Nv.Label" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/cb_auto_stop_tele"
+                    android:layout_width="52dp"
+                    android:layout_height="28dp"
+                    android:layout_marginLeft="@dimen/nv_space_3"
+                    android:duplicateParentState="true"
+                    android:background="@drawable/bg_switch_custom_off" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingLeft="@dimen/nv_space_4"
+                android:paddingRight="@dimen/nv_space_4"
+                android:paddingTop="@dimen/nv_space_3"
+                android:paddingBottom="@dimen/nv_space_2">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Replay delay"
+                        android:textColor="@color/nv_text"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tv_tele_replay_delay_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-"
+                        android:fontFamily="@font/nv_mono"
+                        android:textColor="@color/nv_teal"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="How long withheld packets wait before replay."
+                    android:textColor="@color/nv_text_3"
+                    android:textSize="11sp" />
+
+                <SeekBar
+                    android:id="@+id/seek_tele_replay_delay"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/nv_touch_min"
+                    android:layout_marginTop="@dimen/nv_space_1"
+                    android:progressDrawable="@drawable/nv_seek_track"
+                    android:thumb="@drawable/nv_seek_thumb"
+                    android:maxHeight="5dp"
+                    android:minHeight="5dp"
+                    android:splitTrack="false" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="0ms"
+                        android:fontFamily="@font/nv_mono"
+                        android:textColor="@color/nv_text_4"
+                        android:textSize="10sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="2000ms"
+                        android:fontFamily="@font/nv_mono"
+                        android:textColor="@color/nv_text_4"
+                        android:textSize="10sp" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/page_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="36dp"
+            android:layout_marginTop="@dimen/nv_space_6"
+            android:layout_marginBottom="@dimen/nv_space_2"
+            android:text="SHOW"
+            android:textColor="@color/nv_text_3"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.12" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/nv_space_5"
+            android:layout_marginRight="@dimen/nv_space_5"
+            android:background="@drawable/nv_card"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/nv_space_2"
+            android:paddingBottom="@dimen/nv_space_2">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingLeft="@dimen/nv_space_4"
+                android:paddingRight="@dimen/nv_space_4"
+                android:paddingTop="@dimen/nv_space_2"
+                android:paddingBottom="@dimen/nv_space_2">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ESP boxes"
+                        android:textAppearance="@style/TextAppearance.Nv.Body" />
+                    <TextView
+                        android:id="@+id/tv_esp_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="A box, name and health bar on each enemy"
+                        android:textAppearance="@style/TextAppearance.Nv.Label" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/cb_esp"
+                    android:layout_width="52dp"
+                    android:layout_height="28dp"
+                    android:layout_marginLeft="@dimen/nv_space_3"
+                    android:duplicateParentState="true"
+                    android:background="@drawable/bg_switch_custom_off" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingLeft="@dimen/nv_space_4"
+                android:paddingRight="@dimen/nv_space_4"
+                android:paddingTop="@dimen/nv_space_2"
+                android:paddingBottom="@dimen/nv_space_2">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Radar"
+                        android:textAppearance="@style/TextAppearance.Nv.Body" />
+                    <TextView
+                        android:id="@+id/tv_radar_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Bearing dial, scales itself to what it can see"
+                        android:textAppearance="@style/TextAppearance.Nv.Label" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/cb_radar"
+                    android:layout_width="52dp"
+                    android:layout_height="28dp"
+                    android:layout_marginLeft="@dimen/nv_space_3"
+                    android:duplicateParentState="true"
+                    android:background="@drawable/bg_switch_custom_off" />
+            </LinearLayout>
+
+            <!-- Mod menu toggle (copy of the Radar row). -->
+<LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingLeft="@dimen/nv_space_4"
+                android:paddingRight="@dimen/nv_space_4"
+                android:paddingTop="@dimen/nv_space_2"
+                android:paddingBottom="@dimen/nv_space_2">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mod menu"
+                        android:textAppearance="@style/TextAppearance.Nv.Body" />
+                    <TextView
+                        android:id="@+id/tv_modmenu_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Opens the mod menu. Auto freeze lives inside."
+                        android:textAppearance="@style/TextAppearance.Nv.Label" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/cb_modmenu"
+                    android:layout_width="52dp"
+                    android:layout_height="28dp"
+                    android:layout_marginLeft="@dimen/nv_space_3"
+                    android:duplicateParentState="true"
+                    android:background="@drawable/bg_switch_custom_off" />
+            </LinearLayout>
+
+            <!-- ESP line toggle: a line from screen-bottom to each enemy's feet. -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingLeft="@dimen/nv_space_4"
+                android:paddingRight="@dimen/nv_space_4"
+                android:paddingTop="@dimen/nv_space_2"
+                android:paddingBottom="@dimen/nv_space_2">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ESP line"
+                        android:textAppearance="@style/TextAppearance.Nv.Body" />
+                    <TextView
+                        android:id="@+id/tv_esp_line_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Line from screen bottom to each enemy"
+                        android:textAppearance="@style/TextAppearance.Nv.Label" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/cb_esp_line"
+                    android:layout_width="52dp"
+                    android:layout_height="28dp"
+                    android:layout_marginLeft="@dimen/nv_space_3"
+                    android:duplicateParentState="true"
+                    android:background="@drawable/bg_switch_custom_off" />
+            </LinearLayout>
+
+            <include layout="@layout/nv_dev_rows_esp" />
+
+        </LinearLayout>
+
+
+        <!-- ══ ESP BOX COLOUR PICKER ══════════════════════════════════════ -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="36dp"
+            android:layout_marginTop="@dimen/nv_space_6"
+            android:layout_marginBottom="@dimen/nv_space_2"
+            android:text="COLORS"
+            android:textColor="@color/nv_text_3"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.12" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/nv_space_5"
+            android:layout_marginRight="@dimen/nv_space_5"
+            android:background="@drawable/nv_card"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/nv_space_3"
+            android:paddingBottom="@dimen/nv_space_3"
+            android:paddingLeft="@dimen/nv_space_4"
+            android:paddingRight="@dimen/nv_space_4">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/nv_space_2"
+                android:text="ESP box &amp; line color"
+                android:textAppearance="@style/TextAppearance.Nv.Body" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/nv_space_3"
+                android:text="Applies to both the corner box and the ESP line"
+                android:textAppearance="@style/TextAppearance.Nv.Label" />
+
+            <!-- 7 colour swatches in one horizontal row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- BLACK -->
+                <View
+                    android:id="@+id/btn_color_black"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginRight="8dp"
+                    android:background="#FF000000"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- WHITE -->
+                <View
+                    android:id="@+id/btn_color_white"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginRight="8dp"
+                    android:background="#FFFFFFFF"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- RED -->
+                <View
+                    android:id="@+id/btn_color_red"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginRight="8dp"
+                    android:background="#FFFF4040"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- YELLOW -->
+                <View
+                    android:id="@+id/btn_color_yellow"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginRight="8dp"
+                    android:background="#FFFFDC00"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- BLUE -->
+                <View
+                    android:id="@+id/btn_color_blue"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginRight="8dp"
+                    android:background="#FF3C82FF"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- GREEN -->
+                <View
+                    android:id="@+id/btn_color_green"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginRight="8dp"
+                    android:background="#FF3CDC5A"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- PURPLE -->
+                <View
+                    android:id="@+id/btn_color_purple"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="#FFB450FF"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+            </LinearLayout>
+
+            <!-- Selected color label -->
+            <TextView
+                android:id="@+id/tv_esp_color_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/nv_space_2"
+                android:text="Selected: Red"
+                android:textAppearance="@style/TextAppearance.Nv.Label" />
+
+        </LinearLayout>
+
+        <!-- ════════════════════════════════════════════════════════════════ -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="36dp"
+            android:layout_marginTop="@dimen/nv_space_6"
+            android:layout_marginBottom="@dimen/nv_space_2"
+            android:text="MATCH ID MASK"
+            android:textColor="@color/nv_text_3"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.12" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/page_aim"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="36dp"
+            android:layout_marginTop="@dimen/nv_space_6"
+            android:layout_marginBottom="@dimen/nv_space_2"
+            android:text="AIM ASSIST"
+            android:textColor="@color/nv_text_3"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.12" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/nv_space_5"
+            android:layout_marginRight="@dimen/nv_space_5"
+            android:background="@drawable/nv_card"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/nv_space_2"
+            android:paddingBottom="@dimen/nv_space_2">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingLeft="@dimen/nv_space_4"
+                android:paddingRight="@dimen/nv_space_4"
+                android:paddingTop="@dimen/nv_space_2"
+                android:paddingBottom="@dimen/nv_space_2">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Aim button"
+                        android:textAppearance="@style/TextAppearance.Nv.Body" />
+                    <TextView
+                        android:id="@+id/tv_aimbtn_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Overlay toggle: corrective swipe at a still enemy"
+                        android:textAppearance="@style/TextAppearance.Nv.Label" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/cb_aimbtn"
+                    android:layout_width="52dp"
+                    android:layout_height="28dp"
+                    android:layout_marginLeft="@dimen/nv_space_3"
+                    android:duplicateParentState="true"
+                    android:background="@drawable/bg_switch_custom_off" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground"
+                android:paddingLeft="@dimen/nv_space_4"
+                android:paddingRight="@dimen/nv_space_4"
+                android:paddingTop="@dimen/nv_space_2"
+                android:paddingBottom="@dimen/nv_space_2">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Zoom button"
+                        android:textAppearance="@style/TextAppearance.Nv.Body" />
+                    <TextView
+                        android:id="@+id/tv_zoombtn_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="A zoom button in the overlay"
+                        android:textAppearance="@style/TextAppearance.Nv.Label" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/cb_zoombtn"
+                    android:layout_width="52dp"
+                    android:layout_height="28dp"
+                    android:layout_marginLeft="@dimen/nv_space_3"
+                    android:duplicateParentState="true"
+                    android:background="@drawable/bg_switch_custom_off" />
+            </LinearLayout>
+        </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/page_system"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="36dp"
+            android:layout_marginTop="@dimen/nv_space_6"
+            android:layout_marginBottom="@dimen/nv_space_2"
+            android:text="@string/nv_permissions"
+            android:textColor="@color/nv_text_3"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.12" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/nv_space_5"
+            android:layout_marginRight="@dimen/nv_space_5"
+            android:background="@drawable/nv_card"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/nv_space_2"
+            android:paddingBottom="@dimen/nv_space_2">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/nv_touch_min"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingLeft="@dimen/nv_space_4"
+                android:paddingRight="@dimen/nv_space_4"
+                android:paddingTop="@dimen/nv_space_3"
+                android:paddingBottom="@dimen/nv_space_3">
+
+                <View
+                    android:id="@+id/dot_vpn"
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:background="@drawable/dot_off" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="@dimen/nv_space_3"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="VPN"
+                        android:textColor="@color/nv_text"
+                        android:textSize="15sp" />
+
+                    <TextView
+                        android:id="@+id/tv_vpn_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="@string/checking"
+                        android:textColor="@color/nv_text_3"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/cb_vpn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:minWidth="88dp"
+                    android:gravity="center"
+                    android:background="@drawable/nv_btn_primary"
+                    android:text="@string/nv_grant"
+                    android:textColor="@color/nv_on_brand"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/nv_touch_min"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingLeft="@dimen/nv_space_4"
+                android:paddingRight="@dimen/nv_space_4"
+                android:paddingTop="@dimen/nv_space_3"
+                android:paddingBottom="@dimen/nv_space_3">
+
+                <View
+                    android:id="@+id/dot_display"
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:background="@drawable/dot_off" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="@dimen/nv_space_3"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Display over other apps"
+                        android:textColor="@color/nv_text"
+                        android:textSize="15sp" />
+
+                    <TextView
+                        android:id="@+id/tv_display_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="@string/checking"
+                        android:textColor="@color/nv_text_3"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/cb_display"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:minWidth="88dp"
+                    android:gravity="center"
+                    android:background="@drawable/nv_btn_primary"
+                    android:text="@string/nv_grant"
+                    android:textColor="@color/nv_on_brand"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="36dp"
+            android:layout_marginTop="@dimen/nv_space_6"
+            android:layout_marginBottom="@dimen/nv_space_2"
+            android:text="FLOATING BUTTONS"
+            android:textColor="@color/nv_text_3"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.12" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/nv_space_5"
+            android:layout_marginRight="@dimen/nv_space_5"
+            android:background="@drawable/nv_card"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/nv_space_2"
+            android:paddingBottom="@dimen/nv_space_2">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingLeft="@dimen/nv_space_4"
+                android:paddingRight="@dimen/nv_space_4"
+                android:paddingTop="@dimen/nv_space_3"
+                android:paddingBottom="@dimen/nv_space_2">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Button size"
+                        android:textColor="@color/nv_text"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tv_float_size_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-"
+                        android:fontFamily="@font/nv_mono"
+                        android:textColor="@color/nv_teal"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/floating_size_hint"
+                    android:textColor="@color/nv_text_3"
+                    android:textSize="11sp" />
+
+                <SeekBar
+                    android:id="@+id/seek_float_size"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/nv_touch_min"
+                    android:layout_marginTop="@dimen/nv_space_1"
+                    android:progressDrawable="@drawable/nv_seek_track"
+                    android:thumb="@drawable/nv_seek_thumb"
+                    android:maxHeight="5dp"
+                    android:minHeight="5dp"
+                    android:splitTrack="false" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="80%"
+                        android:fontFamily="@font/nv_mono"
+                        android:textColor="@color/nv_text_4"
+                        android:textSize="10sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="260%"
+                        android:fontFamily="@font/nv_mono"
+                        android:textColor="@color/nv_text_4"
+                        android:textSize="10sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingLeft="@dimen/nv_space_4"
+                android:paddingRight="@dimen/nv_space_4"
+                android:paddingTop="@dimen/nv_space_3"
+                android:paddingBottom="@dimen/nv_space_2">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Button opacity"
+                        android:textColor="@color/nv_text"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tv_float_alpha_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-"
+                        android:fontFamily="@font/nv_mono"
+                        android:textColor="@color/nv_teal"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/floating_alpha_hint"
+                    android:textColor="@color/nv_text_3"
+                    android:textSize="11sp" />
+
+                <SeekBar
+                    android:id="@+id/seek_float_alpha"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/nv_touch_min"
+                    android:layout_marginTop="@dimen/nv_space_1"
+                    android:progressDrawable="@drawable/nv_seek_track"
+                    android:thumb="@drawable/nv_seek_thumb"
+                    android:maxHeight="5dp"
+                    android:minHeight="5dp"
+                    android:splitTrack="false" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="35%"
+                        android:fontFamily="@font/nv_mono"
+                        android:textColor="@color/nv_text_4"
+                        android:textSize="10sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="100%"
+                        android:fontFamily="@font/nv_mono"
+                        android:textColor="@color/nv_text_4"
+                        android:textSize="10sp" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <include layout="@layout/nv_dev_section_developer" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/nv_space_8" />
+
+    </LinearLayout>
+    </ScrollView>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/nv_line" />
+
+    <LinearLayout
+        android:id="@+id/engine_strip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/nv_surface"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingLeft="@dimen/nv_space_5"
+        android:paddingRight="@dimen/nv_space_4"
+        android:paddingTop="@dimen/nv_space_2"
+        android:paddingBottom="@dimen/nv_space_2">
+
+        <View
+            android:id="@+id/dot_strip"
+            android:layout_width="10dp"
+            android:layout_height="10dp"
+            android:background="@drawable/dot_off" />
+
+        <TextView
+            android:id="@+id/tv_strip_status"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="@dimen/nv_space_3"
+            android:text="@string/engine_status_disconnected"
+            android:textAppearance="@style/TextAppearance.Nv.Body"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/btn_strip_engine"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:minWidth="96dp"
+            android:gravity="center"
+            android:background="@drawable/nv_btn_primary"
+            android:text="@string/nv_start"
+            android:textColor="@color/nv_on_brand"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/nv_line" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/nv_ground"
+        android:orientation="horizontal"
+        android:paddingTop="@dimen/nv_space_2"
+        android:paddingBottom="@dimen/nv_space_3">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground">
+
+            <View
+                android:id="@+id/ind_home"
+                android:layout_width="24dp"
+                android:layout_height="3dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@color/nv_teal"
+                android:visibility="invisible" />
+
+            <TextView
+                android:id="@+id/tab_home"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:text="Engine"
+                android:drawableTop="@drawable/ic_tab_engine"
+                android:drawablePadding="3dp"
+                android:paddingTop="7dp"
+                android:paddingBottom="5dp"
+                android:textColor="@color/nv_text_3"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground">
+
+            <View
+                android:id="@+id/ind_overlay"
+                android:layout_width="24dp"
+                android:layout_height="3dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@color/nv_teal"
+                android:visibility="invisible" />
+
+            <TextView
+                android:id="@+id/tab_overlay"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:text="Overlay"
+                android:drawableTop="@drawable/ic_tab_overlay"
+                android:drawablePadding="3dp"
+                android:paddingTop="7dp"
+                android:paddingBottom="5dp"
+                android:textColor="@color/nv_text_3"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground">
+
+            <View
+                android:id="@+id/ind_aim"
+                android:layout_width="24dp"
+                android:layout_height="3dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@color/nv_teal"
+                android:visibility="invisible" />
+
+            <TextView
+                android:id="@+id/tab_aim"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:text="Aim"
+                android:drawableTop="@drawable/ic_tab_aim"
+                android:drawablePadding="3dp"
+                android:paddingTop="7dp"
+                android:paddingBottom="5dp"
+                android:textColor="@color/nv_text_3"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground">
+
+            <View
+                android:id="@+id/ind_system"
+                android:layout_width="24dp"
+                android:layout_height="3dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@color/nv_teal"
+                android:visibility="invisible" />
+
+            <TextView
+                android:id="@+id/tab_system"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:text="System"
+                android:drawableTop="@drawable/ic_tab_system"
+                android:drawablePadding="3dp"
+                android:paddingTop="7dp"
+                android:paddingBottom="5dp"
+                android:textColor="@color/nv_text_3"
+                android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

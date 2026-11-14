@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Engine card, OFF. THE PRIMARY ACTION, so it carries the brand gradient.
+  (Audit B7: the gradient was on "Change" - a secondary control - while the
+  most important control on the screen was a flat card with a hairline
+  border. That inverted the hierarchy, and it also put 15sp white text on
+  the gradient's teal end at 3.35:1.)
+
+  Keeps its FILE NAME because MainActivity.setUI swaps it by resource id and
+  therefore overrides whatever the layout sets. That is why editing the
+  layout alone did nothing here.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:startColor="@color/nv_blue_deep"
+        android:endColor="@color/nv_teal_deep"
+        android:angle="45"
+        android:type="linear"/>
+    <corners android:radius="@dimen/nv_radius_panel"/>
+</shape>
